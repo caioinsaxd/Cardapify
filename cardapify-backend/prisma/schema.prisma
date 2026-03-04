@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -11,4 +5,98 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model Restaurant {
+  id        String     @id @default(uuid()) @map("restaurant")
+  name      String
+  address   String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  categories Category[]
+  orders    Order[]
+  users     User[]
+
+  @@map("restaurant")
+}
+
+model Category {
+  id           String    @id @default(uuid()) @map("category")
+  name         String
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  products     Product[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("category")
+}
+
+model Product {
+  id          String      @id @default(uuid()) @map("product")
+  name        String
+  description String?
+  price       Decimal
+  imageUrl    String?
+  isActive    Boolean     @default(true)
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("product")
+}
+
+model Order {
+  id           String      @id @default(uuid()) @map("order")
+  tableNumber  Int
+  status       OrderStatus @default(PENDING)
+  total        Decimal
+  restaurantId String
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items        OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("order")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid()) @map("order_item")
+  quantity  Int
+  price     Decimal
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_item")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id           String   @id @default(uuid()) @map("user")
+  email        String   @unique
+  password     String
+  restaurantId String?
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  role         UserRole @default(STAFF)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("user")
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
 }
