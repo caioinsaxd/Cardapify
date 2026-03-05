@@ -13,7 +13,7 @@ O objetivo é oferecer uma solução moderna, simples e escalável para autoaten
 
 ## 🚀 Status do Projeto
 
-> **Em desenvolvimento** — fase inicial de estruturação do backend.
+**Em desenvolvimento** — fase inicial de estruturação do backend.
 
 ---
 
@@ -52,16 +52,5 @@ Cada restaurante possui seus próprios dados isolados via `restaurantId`.
 
 ### Pagamentos
 - Pix via gateway (ex: Mercado Pago / Stripe)
-
----
-
-## 🎯 Objetivo da V1
-
-- [ ] Cadastro de restaurante
-- [ ] CRUD de categorias
-- [ ] CRUD de produtos
-- [ ] Customização
-- [ ] Sistema de pedidos
-- [ ] Pagamento obrigatório antes de confirmar pedido
 
 ---
