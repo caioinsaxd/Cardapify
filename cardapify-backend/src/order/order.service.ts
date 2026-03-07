@@ -1,10 +1,21 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto, UpdateOrderStatusDto, OrderStatusEnum, UpdateOrderItemDto } from './dto/order.dto';
 import { Decimal } from '@prisma/client/runtime/library';
 
+const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ['PAID', 'CANCELLED'],
+  PAID: ['PREPARING', 'CANCELLED'],
+  PREPARING: ['READY', 'CANCELLED'],
+  READY: ['COMPLETED', 'CANCELLED'],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
 @Injectable()
 export class OrderService {
+  private readonly logger = new Logger(OrderService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async create(restaurantId: string, dto: CreateOrderDto) {
@@ -55,24 +66,26 @@ export class OrderService {
       });
     }
 
-    return this.prisma.order.create({
-      data: {
-        tableNumber: dto.tableNumber,
-        total,
-        restaurantId,
-        items: {
-          createMany: {
-            data: orderItems,
+    return this.prisma.$transaction(async (tx) => {
+      return tx.order.create({
+        data: {
+          tableNumber: dto.tableNumber,
+          total,
+          restaurantId,
+          items: {
+            createMany: {
+              data: orderItems,
+            },
           },
         },
-      },
-      include: {
-        items: {
-          include: {
-            product: true,
+        include: {
+          items: {
+            include: {
+              product: true,
+            },
           },
         },
-      },
+      });
     });
   }
 
@@ -130,6 +143,16 @@ export class OrderService {
 
     if (!order) {
       throw new NotFoundException('Order not found');
+    }
+
+    const validTransitions = VALID_STATUS_TRANSITIONS[order.status];
+    if (!validTransitions.includes(dto.status)) {
+      this.logger.warn(
+        `Invalid status transition: ${order.status} → ${dto.status} for order ${orderId}`,
+      );
+      throw new BadRequestException(
+        `Cannot transition from ${order.status} to ${dto.status}. Valid transitions: ${validTransitions.join(', ') || 'none'}`,
+      );
     }
 
     return this.prisma.order.update({
