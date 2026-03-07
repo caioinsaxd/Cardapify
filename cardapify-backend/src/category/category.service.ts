@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 
 @Injectable()
 export class CategoryService {
+  private readonly logger = new Logger(CategoryService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async create(restaurantId: string, dto: CreateCategoryDto) {
@@ -18,20 +20,27 @@ export class CategoryService {
     const existingCategory = await this.prisma.category.findFirst({
       where: {
         restaurantId,
-        name: dto.name,
+        name: {
+          equals: dto.name,
+          mode: 'insensitive',
+        },
       },
     });
 
     if (existingCategory) {
+      this.logger.warn(`Duplicate category name: ${dto.name} for restaurant ${restaurantId}`);
       throw new ConflictException('Category with this name already exists for this restaurant');
     }
 
-    return this.prisma.category.create({
+    const category = await this.prisma.category.create({
       data: {
         name: dto.name,
         restaurantId,
       },
     });
+
+    this.logger.debug(`Category created: ${category.id} (${dto.name}) for restaurant ${restaurantId}`);
+    return category;
   }
 
   async findAll(restaurantId: string) {
@@ -89,7 +98,10 @@ export class CategoryService {
     const existingCategory = await this.prisma.category.findFirst({
       where: {
         restaurantId,
-        name: dto.name,
+        name: {
+          equals: dto.name,
+          mode: 'insensitive',
+        },
         NOT: { id: categoryId },
       },
     });
@@ -98,6 +110,7 @@ export class CategoryService {
       throw new ConflictException('Category with this name already exists for this restaurant');
     }
 
+    this.logger.debug(`Category updated: ${categoryId} to "${dto.name}"`);
     return this.prisma.category.update({
       where: { id: categoryId },
       data: { name: dto.name },
