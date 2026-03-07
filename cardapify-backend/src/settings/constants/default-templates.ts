@@ -1,4 +1,5 @@
 export interface RestaurantSettings {
+  [key: string]: unknown;
   theme: {
     primaryColor: string;
     secondaryColor: string;
@@ -22,6 +23,7 @@ export interface RestaurantSettings {
 }
 
 export interface WebSettings {
+  [key: string]: unknown;
   logoUrl: string;
   coverImage: string;
   footer: {
@@ -31,6 +33,7 @@ export interface WebSettings {
 }
 
 export interface TotemSettings {
+  [key: string]: unknown;
   idle: {
     idleTimeout: number;
     showVideos: boolean;
