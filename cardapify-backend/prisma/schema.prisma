@@ -9,14 +9,17 @@ datasource db {
 }
 
 model Restaurant {
-  id        String     @id @default(uuid()) @map("restaurant")
-  name      String
-  address   String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  categories Category[]
-  orders    Order[]
-  users     User[]
+  id           String     @id @default(uuid()) @map("restaurant")
+  name         String
+  address      String?
+  settings     Json?      @map("settings")
+  webSettings  Json?      @map("web_settings")
+  totemSettings Json?     @map("totem_settings")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  categories   Category[]
+  orders       Order[]
+  users        User[]
 
   @@map("restaurant")
 }
