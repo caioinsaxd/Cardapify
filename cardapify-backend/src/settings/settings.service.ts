@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   UpdateSettingsDto,
@@ -11,6 +11,7 @@ import {
   DEFAULT_WEB_SETTINGS,
   DEFAULT_TOTEM_SETTINGS,
 } from './constants/default-templates';
+import { containsDangerousKeys, getDangerousKeys } from '../common/utils/dangerous-keys.util';
 
 export interface JsonObject {
   [key: string]: string | number | boolean | null | JsonObject | JsonObject[];
@@ -28,30 +29,11 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return proto === null || proto === Object.prototype;
 }
 
-const DANGEROUS_KEYS = ['__proto__', 'constructor', 'prototype'];
-
-function containsDangerousKeys(obj: unknown, path = ''): string | null {
-  if (!isPlainObject(obj)) {
-    return null;
-  }
-
-  for (const key of Object.keys(obj)) {
-    if (DANGEROUS_KEYS.includes(key)) {
-      return path + key;
-    }
-    const value = (obj as Record<string, unknown>)[key];
-    if (isPlainObject(value)) {
-      const found = containsDangerousKeys(value, path + key + '.');
-      if (found) {
-        return found;
-      }
-    }
-  }
-  return null;
-}
-
 @Injectable()
 export class SettingsService {
+  private readonly logger = new Logger(SettingsService.name);
+  private readonly dangerousKeys = getDangerousKeys();
+
   constructor(private prisma: PrismaService) {}
 
   async getSettings(restaurantId: string) {
@@ -79,11 +61,11 @@ export class SettingsService {
       throw new NotFoundException('Restaurant not found');
     }
 
-    const plainDto = JSON.parse(JSON.stringify(dto));
+    const plainDto = JSON.parse(JSON.stringify(dto)) as JsonObject;
     
     await this.prisma.restaurant.update({
       where: { id: restaurantId },
-      data: { settings: plainDto as any },
+      data: { settings: plainDto },
     });
 
     return plainDto;
@@ -104,7 +86,7 @@ export class SettingsService {
 
     await this.prisma.restaurant.update({
       where: { id: restaurantId },
-      data: { webSettings: mergedWebSettings as any },
+      data: { webSettings: mergedWebSettings },
     });
 
     return mergedWebSettings;
@@ -124,7 +106,7 @@ export class SettingsService {
 
     await this.prisma.restaurant.update({
       where: { id: restaurantId },
-      data: { totemSettings: mergedTotemSettings as any },
+      data: { totemSettings: mergedTotemSettings },
     });
 
     return mergedTotemSettings;
@@ -166,16 +148,16 @@ export class SettingsService {
     const updated = await this.prisma.restaurant.update({
       where: { id: restaurantId },
       data: {
-        settings: template.settings as any,
-        webSettings: template.webSettings as any,
-        totemSettings: template.totemSettings as any,
+        settings: template.settings as JsonObject,
+        webSettings: template.webSettings as JsonObject,
+        totemSettings: template.totemSettings as JsonObject,
       },
     });
 
     return {
-      settings: updated.settings,
-      webSettings: updated.webSettings,
-      totemSettings: updated.totemSettings,
+      settings: (updated.settings as JsonObject) || DEFAULT_SETTINGS,
+      webSettings: (updated.webSettings as JsonObject) || DEFAULT_WEB_SETTINGS,
+      totemSettings: (updated.totemSettings as JsonObject) || DEFAULT_TOTEM_SETTINGS,
     };
   }
 
@@ -184,14 +166,14 @@ export class SettingsService {
 
     const targetKeys = Object.keys(target);
     for (const key of targetKeys) {
-      if (!DANGEROUS_KEYS.includes(key)) {
+      if (!this.dangerousKeys.includes(key)) {
         output[key] = target[key];
       }
     }
 
     const sourceKeys = Object.keys(source);
     for (const key of sourceKeys) {
-      if (DANGEROUS_KEYS.includes(key)) {
+      if (this.dangerousKeys.includes(key)) {
         continue;
       }
 
