@@ -10,8 +10,8 @@ datasource db {
 
 model Restaurant {
   id           String     @id @default(uuid()) @map("restaurant")
-  name         String
-  address      String?
+  name         String     @db.VarChar(200)
+  address      String?    @db.VarChar(500)
   settings     Json?      @map("settings")
   webSettings  Json?      @map("web_settings")
   totemSettings Json?     @map("totem_settings")
@@ -26,7 +26,7 @@ model Restaurant {
 
 model Category {
   id           String    @id @default(uuid()) @map("category")
-  name         String
+  name         String    @db.VarChar(100)
   restaurantId String
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   products     Product[]
@@ -38,10 +38,10 @@ model Category {
 
 model Product {
   id          String      @id @default(uuid()) @map("product")
-  name        String
-  description String?
-  price       Decimal
-  imageUrl    String?
+  name        String      @db.VarChar(100)
+  description String?     @db.VarChar(500)
+  price       Decimal     @db.Decimal(10, 2)
+  imageUrl    String?     @db.VarChar(2048)
   isActive    Boolean     @default(true)
   categoryId  String
   category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -56,7 +56,7 @@ model Order {
   id           String      @id @default(uuid()) @map("order")
   tableNumber  Int
   status       OrderStatus @default(PENDING)
-  total        Decimal
+  total        Decimal     @db.Decimal(10, 2)
   restaurantId String
   restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   items        OrderItem[]
@@ -69,11 +69,11 @@ model Order {
 model OrderItem {
   id        String  @id @default(uuid()) @map("order_item")
   quantity  Int
-  price     Decimal
+  price     Decimal @db.Decimal(10, 2)
   orderId   String
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   @@map("order_item")
 }
@@ -89,10 +89,10 @@ enum OrderStatus {
 
 model User {
   id                String    @id @default(uuid()) @map("user")
-  email             String    @unique
+  email             String    @unique @db.VarChar(255)
   password          String
   restaurantId      String?
-  restaurant        Restaurant? @relation(fields: [restaurantId], references: [id])
+  restaurant        Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
   role              UserRole  @default(STAFF)
   refreshToken      String?   @map("refresh_token")
   refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
