@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 
@@ -6,6 +6,8 @@ const FORBIDDEN_URL_PROTOCOLS = ['javascript:', 'data:', 'vbscript:', 'file:'];
 
 @Injectable()
 export class ProductService {
+  private readonly logger = new Logger(ProductService.name);
+
   constructor(private prisma: PrismaService) {}
 
   private validateUrl(url: string): void {
@@ -17,6 +19,7 @@ export class ProductService {
 
     for (const protocol of FORBIDDEN_URL_PROTOCOLS) {
       if (lowerUrl.startsWith(protocol)) {
+        this.logger.warn(`Blocked URL with forbidden protocol: ${protocol}`);
         throw new BadRequestException(`URL contains forbidden protocol: ${protocol}`);
       }
     }
@@ -24,9 +27,11 @@ export class ProductService {
     try {
       const parsed = new URL(url);
       if (!['http:', 'https:'].includes(parsed.protocol)) {
+        this.logger.warn(`Invalid URL protocol: ${parsed.protocol}`);
         throw new BadRequestException('URL must use HTTP or HTTPS protocol');
       }
     } catch {
+      this.logger.warn(`Invalid URL format: ${url}`);
       throw new BadRequestException('Invalid URL format');
     }
   }
