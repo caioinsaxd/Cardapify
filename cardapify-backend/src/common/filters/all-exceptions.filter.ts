@@ -15,8 +15,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
-      const exceptionResponse = exception.getResponse();
-      message = (exceptionResponse as any).message || exception.message;
+      const exceptionResponse = exception.getResponse() as unknown;
+      if (typeof exceptionResponse === 'object' && exceptionResponse !== null && 'message' in exceptionResponse) {
+        message = (exceptionResponse as Record<string, unknown>).message as string;
+      } else {
+        message = exception.message;
+      }
     } else if (exception instanceof Error) {
       this.logger.error(`Unhandled exception: ${exception.message}`, exception.stack);
     }
