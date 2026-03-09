@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CategoryService } from '../category/category.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { CategoryService } from '../src/category/category.service';
+import { PrismaService } from '../src/prisma/prisma.service';
 import { NotFoundException, ConflictException } from '@nestjs/common';
-import { CreateCategoryDto, UpdateCategoryDto } from '../category/dto/category.dto';
+import { CreateCategoryDto, UpdateCategoryDto } from '../src/category/dto/category.dto';
 
 describe('CategoryService', () => {
   let service: CategoryService;

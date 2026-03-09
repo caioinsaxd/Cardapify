@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SettingsService } from '../settings/settings.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { SettingsService } from '../src/settings/settings.service';
+import { PrismaService } from '../src/prisma/prisma.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { UpdateSettingsDto, UpdateWebSettingsDto, UpdateTotemSettingsDto } from '../settings/dto/settings.dto';
-import { DEFAULT_TEMPLATES } from '../settings/constants/default-templates';
+import { UpdateSettingsDto, UpdateWebSettingsDto, UpdateTotemSettingsDto } from '../src/settings/dto/settings.dto';
+import { DEFAULT_TEMPLATES } from '../src/settings/constants/default-templates';
 
 describe('SettingsService', () => {
   let service: SettingsService;

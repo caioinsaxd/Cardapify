@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProductService } from '../product/product.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { ProductService } from '../src/product/product.service';
+import { PrismaService } from '../src/prisma/prisma.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { CreateProductDto, UpdateProductDto } from '../product/dto/product.dto';
+import { CreateProductDto, UpdateProductDto } from '../src/product/dto/product.dto';
 import { Decimal } from '@prisma/client/runtime/library';
 
 describe('ProductService', () => {
