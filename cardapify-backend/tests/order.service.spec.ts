@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { OrderService } from '../order/order.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { OrderService } from '../src/order/order.service';
+import { PrismaService } from '../src/prisma/prisma.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { CreateOrderDto, UpdateOrderStatusDto, OrderStatusEnum } from '../order/dto/order.dto';
+import { CreateOrderDto, UpdateOrderStatusDto, OrderStatusEnum } from '../src/order/dto/order.dto';
 import { Decimal } from '@prisma/client/runtime/library';
 
 describe('OrderService', () => {
@@ -228,12 +228,12 @@ describe('OrderService', () => {
       mockPrisma.order.findFirst.mockResolvedValue(mockOrder);
       mockPrisma.order.update.mockResolvedValue({
         ...mockOrder,
-        status: 'PAID',
+        status: OrderStatusEnum.PAID,
       });
 
       const result = await service.updateStatus(restaurantId, orderId, updateDto);
 
-      expect(result.status).toBe('PAID');
+      expect(result.status).toBe(OrderStatusEnum.PAID);
     });
 
     it('should throw NotFoundException if order not found', async () => {
@@ -245,23 +245,23 @@ describe('OrderService', () => {
     });
 
     it('should throw BadRequestException for invalid status transition', async () => {
-      const completedOrder = { ...mockOrder, status: 'COMPLETED' as const };
+      const completedOrder = { ...mockOrder, status: OrderStatusEnum.COMPLETED };
       mockPrisma.order.findFirst.mockResolvedValue(completedOrder);
 
       await expect(
-        service.updateStatus(restaurantId, orderId, { status: 'PREPARING' }),
+        service.updateStatus(restaurantId, orderId, { status: OrderStatusEnum.PREPARING }),
       ).rejects.toThrow(BadRequestException);
       await expect(
-        service.updateStatus(restaurantId, orderId, { status: 'PREPARING' }),
+        service.updateStatus(restaurantId, orderId, { status: OrderStatusEnum.PREPARING }),
       ).rejects.toThrow('Cannot transition from COMPLETED');
     });
 
     it('should allow valid transitions from PENDING', async () => {
       mockPrisma.order.findFirst.mockResolvedValue(mockOrder);
-      mockPrisma.order.update.mockResolvedValue({ ...mockOrder, status: 'PAID' });
+      mockPrisma.order.update.mockResolvedValue({ ...mockOrder, status: OrderStatusEnum.PAID });
 
       await expect(
-        service.updateStatus(restaurantId, orderId, { status: 'PAID' }),
+        service.updateStatus(restaurantId, orderId, { status: OrderStatusEnum.PAID }),
       ).resolves.toBeDefined();
     });
 
@@ -269,14 +269,14 @@ describe('OrderService', () => {
       mockPrisma.order.findFirst.mockResolvedValue(mockOrder);
       mockPrisma.order.update.mockResolvedValue({
         ...mockOrder,
-        status: 'CANCELLED',
+        status: OrderStatusEnum.CANCELLED,
       });
 
       const result = await service.updateStatus(restaurantId, orderId, {
-        status: 'CANCELLED',
+        status: OrderStatusEnum.CANCELLED,
       });
 
-      expect(result.status).toBe('CANCELLED');
+      expect(result.status).toBe(OrderStatusEnum.CANCELLED);
     });
   });
 
@@ -363,16 +363,16 @@ describe('OrderService', () => {
       mockPrisma.order.findFirst.mockResolvedValue(mockOrder);
       mockPrisma.order.update.mockResolvedValue({
         ...mockOrder,
-        status: 'CANCELLED',
+        status: OrderStatusEnum.CANCELLED,
       });
 
       const result = await service.cancel(restaurantId, orderId);
 
-      expect(result.status).toBe('CANCELLED');
+      expect(result.status).toBe(OrderStatusEnum.CANCELLED);
     });
 
     it('should throw BadRequestException if order is already COMPLETED', async () => {
-      const completedOrder = { ...mockOrder, status: 'COMPLETED' as const };
+      const completedOrder = { ...mockOrder, status: OrderStatusEnum.COMPLETED };
       mockPrisma.order.findFirst.mockResolvedValue(completedOrder);
 
       await expect(service.cancel(restaurantId, orderId)).rejects.toThrow(
@@ -384,7 +384,7 @@ describe('OrderService', () => {
     });
 
     it('should throw BadRequestException if order is already CANCELLED', async () => {
-      const cancelledOrder = { ...mockOrder, status: 'CANCELLED' as const };
+      const cancelledOrder = { ...mockOrder, status: OrderStatusEnum.CANCELLED };
       mockPrisma.order.findFirst.mockResolvedValue(cancelledOrder);
 
       await expect(service.cancel(restaurantId, orderId)).rejects.toThrow(
