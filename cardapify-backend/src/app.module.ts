@@ -10,6 +10,7 @@ import { CategoryModule } from './category/category.module';
 import { ProductModule } from './product/product.module';
 import { OrderModule } from './order/order.module';
 import { HealthModule } from './health/health.module';
+import { PublicModule } from './public/public.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { HealthModule } from './health/health.module';
     ProductModule,
     OrderModule,
     HealthModule,
+    PublicModule,
   ],
   controllers: [AppController],
   providers: [AppService],
