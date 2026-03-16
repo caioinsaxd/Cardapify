@@ -9,6 +9,7 @@ import { SettingsModule } from './settings/settings.module';
 import { CategoryModule } from './category/category.module';
 import { ProductModule } from './product/product.module';
 import { OrderModule } from './order/order.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { OrderModule } from './order/order.module';
     CategoryModule,
     ProductModule,
     OrderModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
