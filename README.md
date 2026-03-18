@@ -42,13 +42,13 @@ Cada restaurante possui seus próprios dados isolados via `restaurantId`.
 - **PostgreSQL**
 
 ### Admin Web
-- Next.js
-- React
-- TypeScript
+- Next.js;
+- React;
+- TypeScript;
 
 ### App Totem
-- React Native
-- Expo
+- React Native;
+- Expo;
 
 ### Pagamentos
 - Pix via gateway (ex: Mercado Pago / Stripe)
