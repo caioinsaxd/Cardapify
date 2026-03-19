@@ -11,6 +11,7 @@ import { ProductModule } from './product/product.module';
 import { OrderModule } from './order/order.module';
 import { HealthModule } from './health/health.module';
 import { PublicModule } from './public/public.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { PublicModule } from './public/public.module';
     OrderModule,
     HealthModule,
     PublicModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
