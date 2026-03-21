@@ -45,6 +45,7 @@ Cada restaurante possui seus próprios dados isolados via `restaurantId`.
 - Next.js;
 - React;
 - TypeScript;
+- TailwindCSS
 
 ### App Totem
 - React Native;
