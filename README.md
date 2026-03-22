@@ -51,6 +51,6 @@ Cada restaurante possui seus próprios dados isolados via `restaurantId`.
 - Expo;
 
 ### Pagamentos
-- Pix via gateway (ex: Mercado Pago / Stripe)
+- Pix via gateway (ex: Mercado Pago / Stripe);
 
 ---
