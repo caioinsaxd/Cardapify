@@ -1,8 +1,11 @@
-"use client";
+'use client';
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { User } from "lucide-react";
+import { useState } from "react";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 import {
   LayoutDashboard,
   Utensils,
@@ -13,7 +16,6 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useState } from "react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -23,9 +25,21 @@ const navigation = [
   { name: "Configurações", href: "/dashboard/settings", icon: Settings },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  user: {
+    email: string;
+    role: string;
+  };
+  onLogout: () => void;
+}
+
+export function Sidebar({ user, onLogout }: SidebarProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+
+  const getInitials = (email: string) => {
+    return email.charAt(0).toUpperCase();
+  };
 
   return (
     <>
@@ -77,7 +91,21 @@ export function Sidebar() {
         </nav>
 
         <div className="border-t p-4">
-          <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100">
+          <div className="mb-3 flex items-center gap-3 px-3">
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="bg-slate-100 text-xs">
+                <User className="h-4 w-4 text-slate-500" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{user.email}</p>
+              <p className="text-xs text-slate-500">{user.role}</p>
+            </div>
+          </div>
+          <button
+            onClick={onLogout}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
+          >
             <LogOut className="h-5 w-5" />
             Sair
           </button>
