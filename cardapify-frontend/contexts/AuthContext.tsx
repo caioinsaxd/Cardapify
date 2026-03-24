@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (token) {
         await refreshToken();
       }
-    }, 60 * 60 * 1000); // Refresh every hour
+    }, 60 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [refreshToken]);

@@ -38,10 +38,17 @@ export default function LoginPage() {
     }
   };
 
-  const handleDevLogin = () => {
-    localStorage.setItem('token', 'dev-mock-token');
-    localStorage.setItem('user', JSON.stringify(DEV_USER));
-    router.push('/dashboard');
+  const handleDevLogin = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      await login('admin@cardapify.dev', 'admin123');
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError('Erro no login de desenvolvimento. Verifique se o backend está rodando.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
