@@ -116,7 +116,7 @@ export interface Order {
 }
 
 export interface AuthResponse {
-  access_token: string;
+  token: string;
   user: User;
 }
 
