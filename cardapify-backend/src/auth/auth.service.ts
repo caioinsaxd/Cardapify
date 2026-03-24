@@ -144,7 +144,7 @@ export class AuthService {
   private generateAccessToken(userId: string, email: string, role: string, restaurantId: string | null) {
     return this.jwtService.sign(
       { sub: userId, email, role, restaurantId },
-      { expiresIn: '15m' },
+      { expiresIn: '24h' },
     );
   }
 
