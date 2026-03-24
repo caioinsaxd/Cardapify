@@ -18,6 +18,16 @@ async function bootstrap() {
   
   app.use(new SecurityMiddleware().use.bind(new SecurityMiddleware()));
 
+  const corsOrigins = process.env.CORS_ORIGINS 
+    ? process.env.CORS_ORIGINS.split(',') 
+    : ['http://localhost:3000', 'http://localhost:3001'];
+
+  app.enableCors({
+    origin: corsOrigins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Cardapify API')
     .setDescription('Digital Menu SaaS Platform - Restaurant Management API')
