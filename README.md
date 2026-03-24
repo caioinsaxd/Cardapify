@@ -55,3 +55,67 @@ Cada restaurante possui seus próprios dados isolados via `restaurantId`.
 - Pix via gateway (ex: Mercado Pago / Stripe);
 
 ---
+
+## 🚀 Como Executar o Projeto
+
+### Pré-requisitos
+
+- Node.js 18+
+- PostgreSQL instalado e rodando
+
+### 1. Backend
+
+```bash
+cd cardapify-backend
+
+# Instalar dependências
+npm install
+
+# Configurar banco de dados (criar tabelas)
+npm run db:push
+
+# Popular banco com dados iniciais
+npm run db:seed
+
+# Rodar em modo desenvolvimento
+npm run start:dev
+```
+
+O backend estará disponível em: `http://localhost:3001`
+
+### 2. Frontend
+
+```bash
+cd cardapify-frontend
+
+# Instalar dependências
+npm install
+
+# Copiar arquivo de ambiente
+cp .env.example .env.local
+
+# Rodar em modo desenvolvimento
+npm run dev
+```
+
+O frontend estará disponível em: `http://localhost:3000`
+
+### 3. Login (Desenvolvimento)
+
+1. Acesse `http://localhost:3000/login`
+2. Clique em **"Entrar como Admin (Dev)"** para testar sem credenciais
+
+### Dados de Login (produção)
+
+- **Email:** `admin@cardapify.dev`
+- **Senha:** `admin123`
+
+---
+
+## 📚 API Documentation
+
+Quando o backend estiver rodando, acesse:
+- Swagger: `http://localhost:3001/api/docs`
+- Health Check: `http://localhost:3001/health`
+
+---
