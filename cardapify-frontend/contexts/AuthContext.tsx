@@ -8,7 +8,7 @@ interface AuthContextType {
   restaurantId: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,6 +16,32 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const logout = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await api.post('/auth/logout', {});
+      }
+    } catch {
+      // Ignora erro de logout
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+    }
+  }, []);
+
+  const refreshToken = useCallback(async () => {
+    try {
+      const response = await api.post<{ token: string }>('/auth/refresh', {});
+      localStorage.setItem('token', response.token);
+      return response.token;
+    } catch {
+      logout();
+      return null;
+    }
+  }, [logout]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -32,21 +58,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await refreshToken();
+      }
+    }, 60 * 60 * 1000); // Refresh every hour
+
+    return () => clearInterval(interval);
+  }, [refreshToken]);
+
   const login = useCallback(async (email: string, password: string) => {
-    const response = await api.post<{ access_token: string; user: User }>('/auth/login', {
+    const response = await api.post<{ token: string; user: User }>('/auth/login', {
       email,
       password,
     });
 
-    localStorage.setItem('token', response.access_token);
+    localStorage.setItem('token', response.token);
     localStorage.setItem('user', JSON.stringify(response.user));
     setUser(response.user);
-  }, []);
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
   }, []);
 
   return (
