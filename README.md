@@ -13,13 +13,13 @@ O objetivo é oferecer uma solução moderna, simples e escalável para autoaten
 
 ## 🚀 Status do Projeto
 
-**Em desenvolvimento** — fase inicial de estruturação do backend.
+**Em desenvolvimento** — Backend e Frontend Admin funcionais com autenticação, CRUD de categorias/produtos/pedidos e integração com API pública para QR Code.
 
 ---
 
 ## 🏗 Arquitetura
 
-O sistema será dividido em:
+O sistema é dividido em:
 
 | Módulo | Descrição |
 |---|---|
@@ -40,12 +40,15 @@ Cada restaurante possui seus próprios dados isolados via `restaurantId`.
 - **NestJS** (TypeScript)
 - **Prisma ORM**
 - **PostgreSQL**
+- **JWT** para autenticação
+- **Swagger** para documentação da API
 
 ### Admin Web
-- Next.js;
-- React;
-- TypeScript;
-- TailwindCSS
+- **Next.js 15** (App Router)
+- **React 19**
+- **TypeScript**
+- **TailwindCSS**
+- **React Query** para data fetching
 
 ### App Totem
 - React Native;
@@ -70,6 +73,9 @@ cd cardapify-backend
 
 # Instalar dependências
 npm install
+
+# Gerar cliente Prisma
+npx prisma generate
 
 # Configurar banco de dados (criar tabelas)
 npm run db:push
@@ -103,12 +109,42 @@ O frontend estará disponível em: `http://localhost:3000`
 ### 3. Login (Desenvolvimento)
 
 1. Acesse `http://localhost:3000/login`
-2. Clique em **"Entrar como Admin (Dev)"** para testar sem credenciais
+2. Clique em **"Entrar como Admin (Dev)"** para testar com credenciais reais do seed
 
-### Dados de Login (produção)
+### Dados de Login
 
 - **Email:** `admin@cardapify.dev`
 - **Senha:** `admin123`
+
+---
+
+##  Variáveis de Ambiente
+
+### Backend (.env)
+
+```env
+# Database
+DATABASE_URL="postgresql://postgres:password@localhost:5432/cardapify?schema=public"
+
+# JWT Secret
+JWT_SECRET="sua-secret-aqui"
+JWT_REFRESH_SECRET="sua-refresh-secret-aqui"
+
+# Server Port
+PORT=3001
+
+# CORS Origins (comma-separated)
+CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+
+# Payment Gateway (mock | mercadopago)
+PAYMENT_GATEWAY=mock
+```
+
+### Frontend (.env.local)
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
 
 ---
 
@@ -119,3 +155,12 @@ Quando o backend estiver rodando, acesse:
 - Health Check: `http://localhost:3001/health`
 
 ---
+
+##  Segurança
+
+- Autenticação via JWT com expiração de 24h
+- Refresh token automático no frontend
+- Validação de inputs com class-validator
+- Rate limiting configurado
+- CORS configurável via variável de ambiente
+- Senhas hasheadas com bcrypt (12 rounds)
