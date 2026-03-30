@@ -9,10 +9,10 @@ async function main() {
 
   // Create restaurant
   const restaurant = await prisma.restaurant.upsert({
-    where: { id: 'dev-restaurant-001' },
+    where: { id: '550e8400-e29b-41d4-a716-446655440000' },
     update: {},
     create: {
-      id: 'dev-restaurant-001',
+      id: '550e8400-e29b-41d4-a716-446655440000',
       name: 'Restaurante Demo',
       address: 'Rua Exemplo, 123 - São Paulo, SP',
       settings: {},
@@ -29,16 +29,16 @@ async function main() {
       email: 'admin@cardapify.dev',
       password: hashedPassword,
       role: 'ADMIN',
-      restaurantId: restaurant.id,
+      restaurantId: '550e8400-e29b-41d4-a716-446655440000',
     },
   });
   console.log(`Created user: ${user.email}`);
 
   // Create sample categories
   const categories = [
-    { id: 'cat-bebidas', name: 'Bebidas' },
-    { id: 'cat-lanches', name: 'Lanches' },
-    { id: 'cat-sobremesas', name: 'Sobremesas' },
+    { id: '550e8400-e29b-41d4-a716-446655440001', name: 'Bebidas' },
+    { id: '550e8400-e29b-41d4-a716-446655440002', name: 'Lanches' },
+    { id: '550e8400-e29b-41d4-a716-446655440003', name: 'Sobremesas' },
   ];
 
   for (const cat of categories) {
@@ -48,7 +48,7 @@ async function main() {
       create: {
         id: cat.id,
         name: cat.name,
-        restaurantId: restaurant.id,
+        restaurantId: '550e8400-e29b-41d4-a716-446655440000',
       },
     });
   }
@@ -56,11 +56,11 @@ async function main() {
 
   // Create sample products
   const products = [
-    { id: 'prod-001', name: 'Coca-Cola 600ml', description: 'Refrigerante gelado', price: 4.99, categoryId: 'cat-bebidas' },
-    { id: 'prod-002', name: 'Suco de Laranja', description: 'Suco natural', price: 7.90, categoryId: 'cat-bebidas' },
-    { id: 'prod-003', name: 'X-Burger', description: 'Hambúrguer com queijo', price: 19.99, categoryId: 'cat-lanches' },
-    { id: 'prod-004', name: 'X-Salada', description: 'Hambúrguer com salada', price: 22.90, categoryId: 'cat-lanches' },
-    { id: 'prod-005', name: 'Pudim', description: 'Pudim de leite condensado', price: 8.50, categoryId: 'cat-sobremesas' },
+    { id: '550e8400-e29b-41d4-a716-446655440011', name: 'Coca-Cola 600ml', description: 'Refrigerante gelado', price: 4.99, categoryId: '550e8400-e29b-41d4-a716-446655440001' },
+    { id: '550e8400-e29b-41d4-a716-446655440012', name: 'Suco de Laranja', description: 'Suco natural', price: 7.90, categoryId: '550e8400-e29b-41d4-a716-446655440001' },
+    { id: '550e8400-e29b-41d4-a716-446655440013', name: 'X-Burger', description: 'Hambúrguer com queijo', price: 19.99, categoryId: '550e8400-e29b-41d4-a716-446655440002' },
+    { id: '550e8400-e29b-41d4-a716-446655440014', name: 'X-Salada', description: 'Hambúrguer com salada', price: 22.90, categoryId: '550e8400-e29b-41d4-a716-446655440002' },
+    { id: '550e8400-e29b-41d4-a716-446655440015', name: 'Pudim', description: 'Pudim de leite condensado', price: 8.50, categoryId: '550e8400-e29b-41d4-a716-446655440003' },
   ];
 
   for (const prod of products) {
@@ -81,17 +81,17 @@ async function main() {
 
   // Create sample orders
   const orders = [
-    { id: 'order-001', tableNumber: 1, status: 'PENDING', total: 24.89, items: [
-      { productId: 'prod-001', quantity: 2, price: 4.99 },
-      { productId: 'prod-003', quantity: 1, price: 19.99 },
+    { id: '550e8400-e29b-41d4-a716-446655440021', tableNumber: 1, status: 'PENDING', total: 24.89, items: [
+      { productId: '550e8400-e29b-41d4-a716-446655440011', quantity: 2, price: 4.99 },
+      { productId: '550e8400-e29b-41d4-a716-446655440013', quantity: 1, price: 19.99 },
     ]},
-    { id: 'order-002', tableNumber: 3, status: 'PREPARING', total: 30.80, items: [
-      { productId: 'prod-002', quantity: 2, price: 7.90 },
-      { productId: 'prod-004', quantity: 1, price: 22.90 },
+    { id: '550e8400-e29b-41d4-a716-446655440022', tableNumber: 3, status: 'PREPARING', total: 30.80, items: [
+      { productId: '550e8400-e29b-41d4-a716-446655440012', quantity: 2, price: 7.90 },
+      { productId: '550e8400-e29b-41d4-a716-446655440014', quantity: 1, price: 22.90 },
     ]},
-    { id: 'order-003', tableNumber: 5, status: 'READY', total: 13.40, items: [
-      { productId: 'prod-001', quantity: 1, price: 4.99 },
-      { productId: 'prod-005', quantity: 1, price: 8.50 },
+    { id: '550e8400-e29b-41d4-a716-446655440023', tableNumber: 5, status: 'READY', total: 13.40, items: [
+      { productId: '550e8400-e29b-41d4-a716-446655440011', quantity: 1, price: 4.99 },
+      { productId: '550e8400-e29b-41d4-a716-446655440015', quantity: 1, price: 8.50 },
     ]},
   ];
 
@@ -104,7 +104,7 @@ async function main() {
         tableNumber: order.tableNumber,
         status: order.status as any,
         total: order.total,
-        restaurantId: restaurant.id,
+        restaurantId: '550e8400-e29b-41d4-a716-446655440000',
         items: {
           createMany: {
             data: order.items.map(item => ({
