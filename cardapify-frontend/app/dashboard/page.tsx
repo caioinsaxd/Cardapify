@@ -10,6 +10,7 @@ import { OrderCard } from '@/components/order-card';
 import { ProductCard } from '@/components/product-card';
 import { StatusSummary } from '@/components/status-summary';
 import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 import {
   Tags,
   Utensils,
@@ -153,10 +154,10 @@ export default function DashboardPage() {
                   <Plus className="h-5 w-5" />
                   <span className="text-xs">Novo Produto</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex-col gap-2">
-                  <Tags className="h-5 w-5" />
-                  <span className="text-xs">Nova Categoria</span>
-                </Button>
+                <Link href="/dashboard/categories" className="flex flex-col items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white p-4 transition-colors hover:bg-slate-100">
+                  <Tags className="h-5 w-5 text-slate-600" />
+                  <span className="text-xs text-slate-600">Nova Categoria</span>
+                </Link>
                 <Button variant="outline" className="h-20 flex-col gap-2">
                   <Utensils className="h-5 w-5" />
                   <span className="text-xs">Ver Cardápio</span>
