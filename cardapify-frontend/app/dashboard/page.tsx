@@ -25,6 +25,8 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { data, isLoading, isError } = useDashboard();
 
+  const restaurantId = user?.restaurantId || '550e8400-e29b-41d4-a716-446655440000';
+
   if (isError) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -158,10 +160,10 @@ export default function DashboardPage() {
                   <Tags className="h-5 w-5 text-slate-600" />
                   <span className="text-xs text-slate-600">Nova Categoria</span>
                 </Link>
-                <Button variant="outline" className="h-20 flex-col gap-2">
-                  <Utensils className="h-5 w-5" />
-                  <span className="text-xs">Ver Cardápio</span>
-                </Button>
+                <Link href={`/menu/${restaurantId}`} target="_blank" className="flex h-20 flex-col items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white p-4 transition-colors hover:bg-slate-100">
+                  <Utensils className="h-5 w-5 text-slate-600" />
+                  <span className="text-xs text-slate-600">Ver Cardápio</span>
+                </Link>
                 <Button variant="outline" className="h-20 flex-col gap-2">
                   <ShoppingCart className="h-5 w-5" />
                   <span className="text-xs">Ver Pedidos</span>
