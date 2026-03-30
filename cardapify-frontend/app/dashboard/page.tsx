@@ -150,10 +150,10 @@ export default function DashboardPage() {
                 <CardDescription>Operações comuns</CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="h-20 flex-col gap-2">
-                  <Plus className="h-5 w-5" />
-                  <span className="text-xs">Novo Produto</span>
-                </Button>
+                <Link href="/dashboard/products" className="flex flex-col items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white p-4 transition-colors hover:bg-slate-100">
+                  <Plus className="h-5 w-5 text-slate-600" />
+                  <span className="text-xs text-slate-600">Novo Produto</span>
+                </Link>
                 <Link href="/dashboard/categories" className="flex flex-col items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white p-4 transition-colors hover:bg-slate-100">
                   <Tags className="h-5 w-5 text-slate-600" />
                   <span className="text-xs text-slate-600">Nova Categoria</span>
