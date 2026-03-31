@@ -12,6 +12,8 @@ model Restaurant {
   id           String     @id @default(uuid()) @map("restaurant")
   name         String     @db.VarChar(200)
   address      String?    @db.VarChar(500)
+  phone        String?    @db.VarChar(50)
+  description  String?    @db.VarChar(1000)
   settings     Json?      @map("settings")
   webSettings  Json?      @map("web_settings")
   totemSettings Json?     @map("totem_settings")
