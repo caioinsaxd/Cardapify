@@ -164,10 +164,10 @@ export default function DashboardPage() {
                   <Utensils className="h-5 w-5 text-slate-600" />
                   <span className="text-xs text-slate-600">Ver Cardápio</span>
                 </Link>
-                <Button variant="outline" className="h-20 flex-col gap-2">
-                  <ShoppingCart className="h-5 w-5" />
-                  <span className="text-xs">Ver Pedidos</span>
-                </Button>
+                <Link href="/dashboard/orders" className="flex h-20 flex-col items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white p-4 transition-colors hover:bg-slate-100">
+                  <ShoppingCart className="h-5 w-5 text-slate-600" />
+                  <span className="text-xs text-slate-600">Ver Pedidos</span>
+                </Link>
               </CardContent>
             </Card>
           </div>
