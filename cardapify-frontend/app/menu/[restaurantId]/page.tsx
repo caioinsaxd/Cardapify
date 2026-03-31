@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { usePublicMenu, Category, Product } from '@/hooks/use-public-menu';
 import { CartProvider } from '@/contexts/CartContext';
-import { Loader2, Plus, Minus, ShoppingCart, X, Check } from 'lucide-react';
+import { Loader2, Plus, Minus, ShoppingCart, X, Check, MapPin, Phone, Clock, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 interface MenuContentProps {
@@ -19,8 +19,26 @@ function MenuContent({ restaurantId }: MenuContentProps) {
   const [tableNumber, setTableNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [orderError, setOrderError] = useState('');
+
+  const isRestaurantOpen = useMemo(() => {
+    if (!data?.businessHours) return true;
+    const now = new Date();
+    const dayMap: Record<number, string> = {
+      0: 'sunday', 1: 'monday', 2: 'tuesday', 3: 'wednesday',
+      4: 'thursday', 5: 'friday', 6: 'saturday',
+    };
+    const today = dayMap[now.getDay()];
+    const todayHours = data.businessHours.find(h => h.day === today);
+    
+    if (!todayHours || !todayHours.isOpen) return false;
+    
+    const currentTime = now.toTimeString().slice(0, 5);
+    return currentTime >= todayHours.openTime && currentTime <= todayHours.closeTime;
+  }, [data?.businessHours]);
 
   const handleAddToCart = (product: Product) => {
+    if (!isRestaurantOpen) return;
     addItem({
       productId: product.id,
       name: product.name,
@@ -33,12 +51,13 @@ function MenuContent({ restaurantId }: MenuContentProps) {
     if (!customerName.trim() || items.length === 0) return;
 
     setIsSubmitting(true);
+    setOrderError('');
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/public/${restaurantId}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tableNumber: parseInt(tableNumber) || 1,
+          tableNumber: parseInt(tableNumber) || 0,
           items: items.map(item => ({
             productId: item.productId,
             quantity: item.quantity,
@@ -46,7 +65,11 @@ function MenuContent({ restaurantId }: MenuContentProps) {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to place order');
+      const result = await response.json();
+      if (!response.ok) {
+        setOrderError(result.message || 'Erro ao fazer pedido');
+        return;
+      }
 
       setOrderSuccess(true);
       clearCart();
@@ -57,11 +80,22 @@ function MenuContent({ restaurantId }: MenuContentProps) {
         setIsCartOpen(false);
       }, 3000);
     } catch {
-      alert('Erro ao fazer pedido. Tente novamente.');
+      setOrderError('Erro ao fazer pedido. Tente novamente.');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const canPlaceOrder = useMemo(() => {
+    if (!customerName.trim() || items.length === 0 || !isRestaurantOpen) return false;
+    if (data?.orderSettings?.requireTableNumber && (!tableNumber || parseInt(tableNumber) <= 0)) {
+      return false;
+    }
+    if (data?.orderSettings?.minimumOrderAmount && total < data.orderSettings.minimumOrderAmount) {
+      return false;
+    }
+    return true;
+  }, [customerName, items, isRestaurantOpen, data?.orderSettings, tableNumber, total]);
 
   if (isLoading) {
     return (
@@ -87,8 +121,37 @@ function MenuContent({ restaurantId }: MenuContentProps) {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white shadow-sm">
         <div className="mx-auto max-w-2xl px-4 py-4">
-          <h1 className="text-xl font-bold text-slate-900">{data.restaurant.name}</h1>
-          <p className="text-sm text-slate-500">Monte seu pedido</p>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h1 className="text-xl font-bold text-slate-900">{data.restaurant.name}</h1>
+              {data.restaurant.address && (
+                <p className="mt-1 flex items-center gap-1 text-sm text-slate-500">
+                  <MapPin className="h-3 w-3" />
+                  {data.restaurant.address}
+                </p>
+              )}
+              {data.restaurant.phone && (
+                <p className="mt-0.5 flex items-center gap-1 text-sm text-slate-500">
+                  <Phone className="h-3 w-3" />
+                  {data.restaurant.phone}
+                </p>
+              )}
+            </div>
+            {!isRestaurantOpen && (
+              <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
+                Fechado
+              </span>
+            )}
+          </div>
+          {data.restaurant.description && (
+            <p className="mt-2 text-sm text-slate-600">{data.restaurant.description}</p>
+          )}
+          {!isRestaurantOpen && (
+            <div className="mt-3 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>No momento não estamos接受ando pedidos</span>
+            </div>
+          )}
         </div>
       </header>
 
@@ -103,6 +166,7 @@ function MenuContent({ restaurantId }: MenuContentProps) {
                   key={product.id}
                   product={product}
                   onAdd={() => handleAddToCart(product)}
+                  disabled={!isRestaurantOpen}
                 />
               ))}
             </div>
@@ -113,7 +177,8 @@ function MenuContent({ restaurantId }: MenuContentProps) {
       {/* Cart Button */}
       <button
         onClick={() => setIsCartOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-slate-900 px-6 py-4 text-white shadow-lg transition-transform active:scale-95"
+        disabled={totalItems === 0}
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-slate-900 px-6 py-4 text-white shadow-lg transition-transform active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-400"
       >
         <ShoppingCart className="h-5 w-5" />
         <span className="font-medium">{totalItems}</span>
@@ -180,6 +245,12 @@ function MenuContent({ restaurantId }: MenuContentProps) {
                   {/* Order Form */}
                   {items.length > 0 && (
                     <div className="border-t px-4 py-4 space-y-4">
+                      {orderError && (
+                        <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                          <AlertCircle className="h-4 w-4 shrink-0" />
+                          {orderError}
+                        </div>
+                      )}
                       <div>
                         <label className="block text-sm font-medium text-slate-700">Seu Nome</label>
                         <input
@@ -191,7 +262,9 @@ function MenuContent({ restaurantId }: MenuContentProps) {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700">Mesa (opcional)</label>
+                        <label className="block text-sm font-medium text-slate-700">
+                          Mesa {data.orderSettings.requireTableNumber && <span className="text-red-500">*</span>}
+                        </label>
                         <input
                           type="number"
                           value={tableNumber}
@@ -200,13 +273,18 @@ function MenuContent({ restaurantId }: MenuContentProps) {
                           className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2"
                         />
                       </div>
+                      {data.orderSettings.minimumOrderAmount > 0 && total < data.orderSettings.minimumOrderAmount && (
+                        <p className="text-sm text-amber-600">
+                          Pedido mínimo: {formatCurrency(data.orderSettings.minimumOrderAmount)}
+                        </p>
+                      )}
                       <div className="flex items-center justify-between border-t pt-4">
                         <span className="font-semibold">Total</span>
                         <span className="text-xl font-bold">{formatCurrency(total)}</span>
                       </div>
                       <button
                         onClick={handlePlaceOrder}
-                        disabled={!customerName.trim() || isSubmitting}
+                        disabled={!canPlaceOrder || isSubmitting}
                         className="w-full rounded-lg bg-green-600 py-3 font-semibold text-white transition-colors hover:bg-green-700 disabled:bg-slate-300"
                       >
                         {isSubmitting ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : 'Fazer Pedido'}
@@ -223,19 +301,20 @@ function MenuContent({ restaurantId }: MenuContentProps) {
   );
 }
 
-function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }) {
+function ProductCard({ product, onAdd, disabled }: { product: Product; onAdd: () => void; disabled?: boolean }) {
   return (
     <div className="flex items-center justify-between rounded-lg border bg-white p-4">
       <div className="flex-1">
-        <h3 className="font-medium text-slate-900">{product.name}</h3>
+        <h3 className={`font-medium ${disabled ? 'text-slate-400' : 'text-slate-900'}`}>{product.name}</h3>
         {product.description && (
-          <p className="mt-1 text-sm text-slate-500">{product.description}</p>
+          <p className={`mt-1 text-sm ${disabled ? 'text-slate-300' : 'text-slate-500'}`}>{product.description}</p>
         )}
-        <p className="mt-1 font-semibold text-slate-900">{formatCurrency(parseFloat(product.price))}</p>
+        <p className={`mt-1 font-semibold ${disabled ? 'text-slate-400' : 'text-slate-900'}`}>{formatCurrency(parseFloat(product.price))}</p>
       </div>
       <button
         onClick={onAdd}
-        className="ml-4 rounded-lg bg-slate-900 p-2 text-white transition-colors hover:bg-slate-800"
+        disabled={disabled}
+        className="ml-4 rounded-lg bg-slate-900 p-2 text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
       >
         <Plus className="h-5 w-5" />
       </button>
