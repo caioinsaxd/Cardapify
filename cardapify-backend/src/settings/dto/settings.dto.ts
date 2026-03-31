@@ -185,3 +185,89 @@ export class ApplyTemplateDto {
   @MaxLength(50)
   templateId: string;
 }
+
+export class OrderSettingsDto {
+  @ApiPropertyOptional({ example: true, description: 'Require table number for orders' })
+  @IsOptional()
+  @IsBoolean()
+  requireTableNumber?: boolean;
+
+  @ApiPropertyOptional({ example: 0, description: 'Minimum order amount' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  minimumOrderAmount?: number;
+
+  @ApiPropertyOptional({ example: false, description: 'Auto-confirm orders without manual approval' })
+  @IsOptional()
+  @IsBoolean()
+  autoConfirmOrders?: boolean;
+
+  @ApiPropertyOptional({ example: 30, description: 'Estimated preparation time in minutes' })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(180)
+  preparationTimeMinutes?: number;
+}
+
+export class BusinessHoursDto {
+  @ApiPropertyOptional({ example: 'monday', description: 'Day of week' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  day?: string;
+
+  @ApiPropertyOptional({ example: '09:00', description: 'Opening time' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(10)
+  openTime?: string;
+
+  @ApiPropertyOptional({ example: '22:00', description: 'Closing time' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(10)
+  closeTime?: string;
+
+  @ApiPropertyOptional({ example: true, description: 'Is open on this day' })
+  @IsOptional()
+  @IsBoolean()
+  isOpen?: boolean;
+}
+
+export class UpdateRestaurantProfileDto {
+  @ApiPropertyOptional({ example: 'My Restaurant', description: 'Restaurant name' })
+  @IsOptional()
+  @IsSafeString()
+  @MaxLength(200)
+  name?: string;
+
+  @ApiPropertyOptional({ example: '123 Main St', description: 'Restaurant address' })
+  @IsOptional()
+  @IsSafeString()
+  @MaxLength(500)
+  address?: string;
+
+  @ApiPropertyOptional({ example: '+55 11 99999-9999', description: 'Phone number' })
+  @IsOptional()
+  @IsSafeString()
+  @MaxLength(50)
+  phone?: string;
+
+  @ApiPropertyOptional({ example: 'Best food in town!', description: 'Restaurant description' })
+  @IsOptional()
+  @IsSafeString()
+  @MaxLength(1000)
+  description?: string;
+}
+
+export class UpdateOrderSettingsDto {
+  @ApiPropertyOptional({ description: 'Order settings configuration' })
+  @IsOptional()
+  orderSettings?: OrderSettingsDto;
+
+  @ApiPropertyOptional({ description: 'Business hours configuration' })
+  @IsOptional()
+  businessHours?: BusinessHoursDto[];
+}

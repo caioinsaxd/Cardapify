@@ -5,6 +5,8 @@ import {
   UpdateSettingsDto,
   UpdateWebSettingsDto,
   UpdateTotemSettingsDto,
+  UpdateRestaurantProfileDto,
+  UpdateOrderSettingsDto,
   ApplyTemplateDto,
 } from './dto/settings.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -16,6 +18,30 @@ import { CurrentUser, AuthUser } from '../common/decorators/current-user.decorat
 @UseGuards(JwtAuthGuard)
 export class SettingsController {
   constructor(private settingsService: SettingsService) {}
+
+  @Get('profile')
+  @ApiOperation({ summary: 'Get restaurant profile' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
+  async getRestaurantProfile(@CurrentUser() user: AuthUser) {
+    return this.settingsService.getRestaurantProfile(user.restaurantId);
+  }
+
+  @Patch('profile')
+  @ApiOperation({ summary: 'Update restaurant profile' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully' })
+  async updateRestaurantProfile(@CurrentUser() user: AuthUser, @Body() dto: UpdateRestaurantProfileDto) {
+    return this.settingsService.updateRestaurantProfile(user.restaurantId, dto);
+  }
+
+  @Patch('orders')
+  @ApiOperation({ summary: 'Update order settings and business hours' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiResponse({ status: 200, description: 'Order settings updated successfully' })
+  async updateOrderSettings(@CurrentUser() user: AuthUser, @Body() dto: UpdateOrderSettingsDto) {
+    return this.settingsService.updateOrderSettings(user.restaurantId, dto);
+  }
 
   @Get()
   @ApiOperation({ summary: 'Get restaurant settings' })
