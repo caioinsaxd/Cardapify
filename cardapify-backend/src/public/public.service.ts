@@ -3,6 +3,51 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreatePublicOrderDto } from './dto/public.dto';
 import { Decimal } from '@prisma/client/runtime/library';
 
+export interface JsonObject {
+  [key: string]: unknown;
+}
+
+export interface OrderSettings {
+  requireTableNumber: boolean;
+  minimumOrderAmount: number;
+  autoConfirmOrders: boolean;
+  preparationTimeMinutes: number;
+}
+
+export interface BusinessHours {
+  day: string;
+  openTime: string;
+  closeTime: string;
+  isOpen: boolean;
+}
+
+const DEFAULT_ORDER_SETTINGS: OrderSettings = {
+  requireTableNumber: true,
+  minimumOrderAmount: 0,
+  autoConfirmOrders: false,
+  preparationTimeMinutes: 30,
+};
+
+const DEFAULT_BUSINESS_HOURS: BusinessHours[] = [
+  { day: 'monday', openTime: '09:00', closeTime: '22:00', isOpen: true },
+  { day: 'tuesday', openTime: '09:00', closeTime: '22:00', isOpen: true },
+  { day: 'wednesday', openTime: '09:00', closeTime: '22:00', isOpen: true },
+  { day: 'thursday', openTime: '09:00', closeTime: '22:00', isOpen: true },
+  { day: 'friday', openTime: '09:00', closeTime: '23:00', isOpen: true },
+  { day: 'saturday', openTime: '10:00', closeTime: '23:00', isOpen: true },
+  { day: 'sunday', openTime: '10:00', closeTime: '21:00', isOpen: true },
+];
+
+const DAY_MAP: Record<number, string> = {
+  0: 'sunday',
+  1: 'monday',
+  2: 'tuesday',
+  3: 'wednesday',
+  4: 'thursday',
+  5: 'friday',
+  6: 'saturday',
+};
+
 @Injectable()
 export class PublicService {
   private readonly logger = new Logger(PublicService.name);
@@ -38,11 +83,20 @@ export class PublicService {
       },
     });
 
+    const settings = (restaurant.settings as JsonObject) || {};
+    const orderSettings = (settings.orderSettings as OrderSettings) || DEFAULT_ORDER_SETTINGS;
+    const businessHours = (settings.businessHours as BusinessHours[]) || DEFAULT_BUSINESS_HOURS;
+
     return {
       restaurant: {
         id: restaurant.id,
         name: restaurant.name,
+        address: restaurant.address,
+        phone: (restaurant as any).phone || null,
+        description: (restaurant as any).description || null,
       },
+      orderSettings,
+      businessHours,
       categories: categories.map(cat => ({
         id: cat.id,
         name: cat.name,
@@ -90,8 +144,29 @@ export class PublicService {
       throw new NotFoundException('Restaurant not found');
     }
 
+    const settings = (restaurant.settings as JsonObject) || {};
+    const orderSettings = (settings.orderSettings as OrderSettings) || DEFAULT_ORDER_SETTINGS;
+    const businessHours = (settings.businessHours as BusinessHours[]) || DEFAULT_BUSINESS_HOURS;
+
     if (!dto.items || dto.items.length === 0) {
       throw new BadRequestException('Order must have at least one item');
+    }
+
+    if (orderSettings.requireTableNumber && (!dto.tableNumber || dto.tableNumber <= 0)) {
+      throw new BadRequestException('Table number is required');
+    }
+
+    const today = new Date();
+    const currentDay = DAY_MAP[today.getDay()];
+    const dayHours = businessHours.find(h => h.day === currentDay);
+
+    if (!dayHours || !dayHours.isOpen) {
+      throw new BadRequestException('Restaurant is currently closed');
+    }
+
+    const currentTime = today.toTimeString().slice(0, 5);
+    if (currentTime < dayHours.openTime || currentTime > dayHours.closeTime) {
+      throw new BadRequestException('Restaurant is currently closed');
     }
 
     let total = new Decimal(0);
@@ -133,12 +208,21 @@ export class PublicService {
       });
     }
 
+    if (orderSettings.minimumOrderAmount > 0 && total.lessThan(orderSettings.minimumOrderAmount)) {
+      throw new BadRequestException(
+        `Minimum order amount is R$ ${orderSettings.minimumOrderAmount.toFixed(2)}`,
+      );
+    }
+
+    const initialStatus = orderSettings.autoConfirmOrders ? 'PAID' : 'PENDING';
+
     return this.prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
         data: {
-          tableNumber: dto.tableNumber,
+          tableNumber: dto.tableNumber || 0,
           total,
           restaurantId,
+          status: initialStatus,
           items: {
             createMany: {
               data: orderItems,
@@ -160,7 +244,7 @@ export class PublicService {
         },
       });
 
-      this.logger.log(`Public order created: ${order.id} for table ${dto.tableNumber}`);
+      this.logger.log(`Public order created: ${order.id} for table ${dto.tableNumber}, status: ${order.status}`);
 
       return {
         orderId: order.id,
@@ -174,6 +258,7 @@ export class PublicService {
           price: item.price.toString(),
         })),
         createdAt: order.createdAt,
+        estimatedTime: orderSettings.preparationTimeMinutes,
       };
     });
   }
