@@ -18,11 +18,32 @@ export interface Category {
   products: Product[];
 }
 
+export interface OrderSettings {
+  requireTableNumber: boolean;
+  minimumOrderAmount: number;
+  autoConfirmOrders: boolean;
+  preparationTimeMinutes: number;
+}
+
+export interface BusinessHours {
+  day: string;
+  openTime: string;
+  closeTime: string;
+  isOpen: boolean;
+}
+
+export interface Restaurant {
+  id: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
+  description: string | null;
+}
+
 export interface MenuData {
-  restaurant: {
-    id: string;
-    name: string;
-  };
+  restaurant: Restaurant;
+  orderSettings: OrderSettings;
+  businessHours: BusinessHours[];
   categories: Category[];
 }
 
