@@ -5,7 +5,7 @@ import { useSettings, DAY_NAMES, BusinessHours, OrderSettings, RestaurantProfile
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Save, Clock, Store, ShoppingCart } from 'lucide-react';
+import { Loader2, Save, Clock, Store, ShoppingCart, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type TabType = 'profile' | 'orders' | 'hours';
@@ -35,6 +35,10 @@ export default function SettingsPage() {
   });
   
   const [hoursForm, setHoursForm] = useState<BusinessHours[]>([]);
+  
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [ordersSaved, setOrdersSaved] = useState(false);
+  const [hoursSaved, setHoursSaved] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -68,15 +72,27 @@ export default function SettingsPage() {
   }
 
   const handleSaveProfile = async () => {
-    await updateProfile(profileForm);
+    const success = await updateProfile(profileForm);
+    if (success) {
+      setProfileSaved(true);
+      setTimeout(() => setProfileSaved(false), 2000);
+    }
   };
 
   const handleSaveOrders = async () => {
-    await updateOrderSettings(orderForm);
+    const success = await updateOrderSettings(orderForm);
+    if (success) {
+      setOrdersSaved(true);
+      setTimeout(() => setOrdersSaved(false), 2000);
+    }
   };
 
   const handleSaveHours = async () => {
-    await updateBusinessHours(hoursForm);
+    const success = await updateBusinessHours(hoursForm);
+    if (success) {
+      setHoursSaved(true);
+      setTimeout(() => setHoursSaved(false), 2000);
+    }
   };
 
   const handleHoursChange = (day: string, field: keyof BusinessHours, value: string | boolean) => {
@@ -126,6 +142,7 @@ export default function SettingsPage() {
                 value={profileForm.name || ''}
                 onChange={(e) => setProfileForm((prev) => ({ ...prev, name: e.target.value }))}
                 placeholder="Nome do restaurante"
+                maxLength={200}
               />
             </div>
             <div>
@@ -134,15 +151,21 @@ export default function SettingsPage() {
                 value={profileForm.address || ''}
                 onChange={(e) => setProfileForm((prev) => ({ ...prev, address: e.target.value }))}
                 placeholder="Endereço completo"
+                maxLength={500}
               />
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">Telefone</label>
               <Input
                 value={profileForm.phone || ''}
-                onChange={(e) => setProfileForm((prev) => ({ ...prev, phone: e.target.value }))}
+                onChange={(e) => {
+                  const sanitized = e.target.value.replace(/[^\d\s\-\(\)\+]/g, '');
+                  setProfileForm((prev) => ({ ...prev, phone: sanitized.slice(0, 20) }));
+                }}
                 placeholder="+55 11 99999-9999"
+                maxLength={20}
               />
+              <p className="mt-1 text-xs text-slate-500">Apenas números, espaços, hífens, parênteses e +</p>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">Descrição</label>
@@ -151,14 +174,24 @@ export default function SettingsPage() {
                 onChange={(e) => setProfileForm((prev) => ({ ...prev, description: e.target.value }))}
                 placeholder="Breve descrição do seu restaurante"
                 rows={3}
+                maxLength={1000}
                 className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
             <div className="flex justify-end pt-2">
-              <Button onClick={handleSaveProfile} disabled={isSaving}>
+              <Button onClick={handleSaveProfile} disabled={isSaving || profileSaved}>
                 {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-                <Save className="h-4 w-4" />
-                Salvar
+                {profileSaved ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Salvo!
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Salvar
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
@@ -243,10 +276,19 @@ export default function SettingsPage() {
             </div>
 
             <div className="flex justify-end pt-2">
-              <Button onClick={handleSaveOrders} disabled={isSaving}>
+              <Button onClick={handleSaveOrders} disabled={isSaving || ordersSaved}>
                 {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-                <Save className="h-4 w-4" />
-                Salvar
+                {ordersSaved ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Salvo!
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Salvar
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
@@ -312,10 +354,19 @@ export default function SettingsPage() {
             ))}
 
             <div className="flex justify-end pt-2">
-              <Button onClick={handleSaveHours} disabled={isSaving}>
+              <Button onClick={handleSaveHours} disabled={isSaving || hoursSaved}>
                 {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-                <Save className="h-4 w-4" />
-                Salvar
+                {hoursSaved ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Salvo!
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Salvar
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
