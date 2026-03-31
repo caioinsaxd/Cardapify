@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MaxLength, IsNumber, Min, Max, IsBoolean } from 'class-validator';
+import { IsOptional, IsString, MaxLength, IsNumber, Min, Max, IsBoolean, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsSafeString } from '../../common/decorators/is-safe-string.decorator';
 
@@ -249,10 +249,11 @@ export class UpdateRestaurantProfileDto {
   @MaxLength(500)
   address?: string;
 
-  @ApiPropertyOptional({ example: '+55 11 99999-9999', description: 'Phone number' })
+  @ApiPropertyOptional({ example: '+55 11 99999-9999', description: 'Phone number (only numbers, spaces, dashes, parentheses and +)' })
   @IsOptional()
-  @IsSafeString()
-  @MaxLength(50)
+  @IsString()
+  @Matches(/^[\d\s\-\(\)\+]+$/, { message: 'Phone must contain only numbers, spaces, dashes, parentheses, and +' })
+  @MaxLength(20)
   phone?: string;
 
   @ApiPropertyOptional({ example: 'Best food in town!', description: 'Restaurant description' })
