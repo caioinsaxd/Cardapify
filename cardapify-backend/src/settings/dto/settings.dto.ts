@@ -209,6 +209,11 @@ export class OrderSettingsDto {
   @Min(1)
   @Max(180)
   preparationTimeMinutes?: number;
+
+  @ApiPropertyOptional({ example: true, description: 'Allow customers to add observations/notes to orders' })
+  @IsOptional()
+  @IsBoolean()
+  allowObservations?: boolean;
 }
 
 export class BusinessHoursDto {
