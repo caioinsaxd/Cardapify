@@ -23,6 +23,7 @@ export interface OrderSettings {
   minimumOrderAmount: number;
   autoConfirmOrders: boolean;
   preparationTimeMinutes: number;
+  allowObservations: boolean;
 }
 
 export interface BusinessHours {

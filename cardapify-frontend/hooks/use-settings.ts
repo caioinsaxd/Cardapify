@@ -9,6 +9,7 @@ export interface OrderSettings {
   minimumOrderAmount: number;
   autoConfirmOrders: boolean;
   preparationTimeMinutes: number;
+  allowObservations: boolean;
 }
 
 export interface BusinessHours {
@@ -49,6 +50,7 @@ const DEFAULT_ORDER_SETTINGS: OrderSettings = {
   minimumOrderAmount: 0,
   autoConfirmOrders: false,
   preparationTimeMinutes: 30,
+  allowObservations: true,
 };
 
 const DEFAULT_BUSINESS_HOURS: BusinessHours[] = [

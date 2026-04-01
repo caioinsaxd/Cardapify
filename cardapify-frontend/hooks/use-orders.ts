@@ -16,6 +16,7 @@ export interface Order {
   tableNumber: number;
   status: 'PENDING' | 'PAID' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
   total: string;
+  observations: string | null;
   createdAt: string;
   items: OrderItem[];
 }
