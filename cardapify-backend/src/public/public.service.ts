@@ -12,6 +12,7 @@ export interface OrderSettings {
   minimumOrderAmount: number;
   autoConfirmOrders: boolean;
   preparationTimeMinutes: number;
+  allowObservations: boolean;
 }
 
 export interface BusinessHours {
@@ -26,6 +27,7 @@ const DEFAULT_ORDER_SETTINGS: OrderSettings = {
   minimumOrderAmount: 0,
   autoConfirmOrders: false,
   preparationTimeMinutes: 30,
+  allowObservations: true,
 };
 
 const DEFAULT_BUSINESS_HOURS: BusinessHours[] = [
@@ -153,7 +155,7 @@ export class PublicService {
     }
 
     if (orderSettings.requireTableNumber && (!dto.tableNumber || dto.tableNumber <= 0)) {
-      throw new BadRequestException('Table number is required');
+      throw new BadRequestException('Por favor coloque um número de mesa válido');
     }
 
     const today = new Date();
@@ -161,12 +163,12 @@ export class PublicService {
     const dayHours = businessHours.find(h => h.day === currentDay);
 
     if (!dayHours || !dayHours.isOpen) {
-      throw new BadRequestException('Restaurant is currently closed');
+      throw new BadRequestException('Restaurante fechado no momento');
     }
 
     const currentTime = today.toTimeString().slice(0, 5);
     if (currentTime < dayHours.openTime || currentTime > dayHours.closeTime) {
-      throw new BadRequestException('Restaurant is currently closed');
+      throw new BadRequestException('Restaurante fechado no momento');
     }
 
     let total = new Decimal(0);
@@ -188,14 +190,14 @@ export class PublicService {
     });
 
     if (products.length !== productIds.length) {
-      throw new BadRequestException('One or more products are not available');
+      throw new BadRequestException('Um ou mais produtos não estão disponíveis');
     }
 
     for (const item of dto.items) {
       const product = products.find(p => p.id === item.productId);
       
       if (!product) {
-        throw new NotFoundException(`Product not found`);
+        throw new NotFoundException(`Produto não encontrado`);
       }
 
       const itemTotal = product.price.mul(item.quantity);
@@ -210,7 +212,7 @@ export class PublicService {
 
     if (orderSettings.minimumOrderAmount > 0 && total.lessThan(orderSettings.minimumOrderAmount)) {
       throw new BadRequestException(
-        `Minimum order amount is R$ ${orderSettings.minimumOrderAmount.toFixed(2)}`,
+        `Pedido mínimo: R$ ${orderSettings.minimumOrderAmount.toFixed(2)}`,
       );
     }
 
@@ -223,6 +225,7 @@ export class PublicService {
           total,
           restaurantId,
           status: initialStatus,
+          observations: dto.observations?.trim() || null,
           items: {
             createMany: {
               data: orderItems,
