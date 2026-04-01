@@ -17,6 +17,7 @@ function MenuContent({ restaurantId }: MenuContentProps) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [tableNumber, setTableNumber] = useState('');
+  const [observations, setObservations] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderError, setOrderError] = useState('');
@@ -53,16 +54,27 @@ function MenuContent({ restaurantId }: MenuContentProps) {
     setIsSubmitting(true);
     setOrderError('');
     try {
+      const requestBody: any = {
+        items: items.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        })),
+      };
+
+      if (data?.orderSettings?.requireTableNumber) {
+        requestBody.tableNumber = parseInt(tableNumber) || 0;
+      } else if (tableNumber && parseInt(tableNumber) > 0) {
+        requestBody.tableNumber = parseInt(tableNumber);
+      }
+
+      if (data?.orderSettings?.allowObservations && observations.trim()) {
+        requestBody.observations = observations.trim().slice(0, 500);
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/public/${restaurantId}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tableNumber: parseInt(tableNumber) || 0,
-          items: items.map(item => ({
-            productId: item.productId,
-            quantity: item.quantity,
-          })),
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const result = await response.json();
@@ -75,6 +87,7 @@ function MenuContent({ restaurantId }: MenuContentProps) {
       clearCart();
       setCustomerName('');
       setTableNumber('');
+      setObservations('');
       setTimeout(() => {
         setOrderSuccess(false);
         setIsCartOpen(false);
@@ -261,18 +274,35 @@ function MenuContent({ restaurantId }: MenuContentProps) {
                           className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700">
-                          Mesa {data.orderSettings.requireTableNumber && <span className="text-red-500">*</span>}
-                        </label>
-                        <input
-                          type="number"
-                          value={tableNumber}
-                          onChange={(e) => setTableNumber(e.target.value)}
-                          placeholder="Ex: 5"
-                          className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2"
-                        />
-                      </div>
+                      {data.orderSettings.requireTableNumber && (
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700">
+                            Mesa <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            value={tableNumber}
+                            onChange={(e) => setTableNumber(e.target.value)}
+                            placeholder="Ex: 5"
+                            className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2"
+                          />
+                        </div>
+                      )}
+                      {data.orderSettings.allowObservations && (
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700">
+                            Observações <span className="text-slate-400">(opcional)</span>
+                          </label>
+                          <textarea
+                            value={observations}
+                            onChange={(e) => setObservations(e.target.value.slice(0, 500))}
+                            placeholder="Ex: sem cebola, alérgico a lactose..."
+                            rows={2}
+                            className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                          />
+                          <p className="mt-1 text-xs text-slate-400">{observations.length}/500</p>
+                        </div>
+                      )}
                       {data.orderSettings.minimumOrderAmount > 0 && total < data.orderSettings.minimumOrderAmount && (
                         <p className="text-sm text-amber-600">
                           Pedido mínimo: {formatCurrency(data.orderSettings.minimumOrderAmount)}

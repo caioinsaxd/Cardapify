@@ -32,6 +32,7 @@ export default function SettingsPage() {
     minimumOrderAmount: 0,
     autoConfirmOrders: false,
     preparationTimeMinutes: 30,
+    allowObservations: true,
   });
   
   const [hoursForm, setHoursForm] = useState<BusinessHours[]>([]);
@@ -273,6 +274,28 @@ export default function SettingsPage() {
                 placeholder="30"
                 className="w-32"
               />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-slate-700">Permitir observações</label>
+                <p className="text-xs text-slate-500">Cliente pode adicionar notas ao pedido (alergias, preferências)</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOrderForm((prev) => ({ ...prev, allowObservations: !prev.allowObservations }))}
+                className={cn(
+                  'relative h-6 w-11 rounded-full transition-colors',
+                  orderForm.allowObservations ? 'bg-slate-900' : 'bg-slate-200'
+                )}
+              >
+                <span
+                  className={cn(
+                    'absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform',
+                    orderForm.allowObservations && 'translate-x-5'
+                  )}
+                />
+              </button>
             </div>
 
             <div className="flex justify-end pt-2">

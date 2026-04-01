@@ -6,7 +6,7 @@ import { Modal } from '@/components/ui/modal';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Clock, CheckCircle, XCircle, ChefHat } from 'lucide-react';
+import { Loader2, Clock, CheckCircle, XCircle, ChefHat, MessageSquare } from 'lucide-react';
 import { STATUS_CONFIG, ORDER_STATUSES } from '@/lib/constants';
 import { formatCurrency, getRelativeTime } from '@/lib/utils';
 import { cn } from '@/lib/utils';
@@ -52,6 +52,18 @@ function OrderCard({ order, onUpdateStatus }: { order: Order; onUpdateStatus: (o
             </div>
           ))}
         </div>
+
+        {order.observations && (
+          <div className="mt-3 rounded-lg bg-amber-50 p-3">
+            <div className="flex items-start gap-2">
+              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <div>
+                <p className="text-xs font-medium text-amber-800">Observações do cliente</p>
+                <p className="mt-0.5 text-sm text-amber-700">{order.observations}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {canAdvance && order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && (
           <div className="mt-4 flex items-center justify-between">
