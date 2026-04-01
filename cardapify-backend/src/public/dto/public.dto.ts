@@ -1,4 +1,4 @@
-import { IsNumber, IsNotEmpty, Min, Max, IsArray, ValidateNested, IsString, IsNotEmptyObject, Validate } from 'class-validator';
+import { IsNumber, IsNotEmpty, Min, Max, IsArray, ValidateNested, IsString, IsOptional, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -17,12 +17,18 @@ class PublicOrderItemDto {
 }
 
 export class CreatePublicOrderDto {
-  @ApiProperty({ example: 5, description: 'Table number (1-999)' })
+  @ApiPropertyOptional({ example: 5, description: 'Table number (1-999)' })
+  @IsOptional()
   @IsNumber()
-  @Min(1)
   @Max(999)
   @Type(() => Number)
-  tableNumber: number;
+  tableNumber?: number;
+
+  @ApiPropertyOptional({ example: 'Sem cebola, por favor!', description: 'Observações do pedido', maxLength: 500 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  observations?: string;
 
   @ApiProperty({ type: [PublicOrderItemDto], description: 'Order items' })
   @IsArray()
