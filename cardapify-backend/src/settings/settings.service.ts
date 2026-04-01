@@ -28,6 +28,7 @@ export const DEFAULT_ORDER_SETTINGS = {
   minimumOrderAmount: 0,
   autoConfirmOrders: false,
   preparationTimeMinutes: 30,
+  allowObservations: true,
 };
 
 export const DEFAULT_BUSINESS_HOURS = [
