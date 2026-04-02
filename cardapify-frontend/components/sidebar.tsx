@@ -12,6 +12,7 @@ import {
   Tags,
   ShoppingCart,
   Settings,
+  Palette,
   LogOut,
   Menu,
   X,
@@ -23,6 +24,7 @@ const navigation = [
   { name: "Produtos", href: "/dashboard/products", icon: Utensils },
   { name: "Pedidos", href: "/dashboard/orders", icon: ShoppingCart },
   { name: "Configurações", href: "/dashboard/settings", icon: Settings },
+  { name: "Customizar", href: "/dashboard/customize", icon: Palette },
 ];
 
 interface SidebarProps {
