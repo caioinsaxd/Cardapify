@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter, Stack, Redirect } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
 
-function RootNavigator() {
+function RootNavigatorContent() {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -17,20 +16,41 @@ function RootNavigator() {
     );
   }
 
-  if (!user) {
-    return <Redirect href="/(auth)/login" />;
-  }
-
   return (
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: 'fade',
       }}
     >
-      <Stack.Screen name="menu" />
-      <Stack.Screen name="cart" />
-      <Stack.Screen name="order-success" />
+      {!user ? (
+        <Stack.Screen
+          name="login"
+          options={{
+            animation: 'fade',
+          }}
+        />
+      ) : (
+        <>
+          <Stack.Screen
+            name="menu"
+            options={{
+              animation: 'fade',
+            }}
+          />
+          <Stack.Screen
+            name="cart"
+            options={{
+              animation: 'slide_from_right',
+            }}
+          />
+          <Stack.Screen
+            name="order-success"
+            options={{
+              animation: 'fade',
+            }}
+          />
+        </>
+      )}
     </Stack>
   );
 }
@@ -39,7 +59,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <StatusBar style="dark" />
-      <RootNavigator />
+      <RootNavigatorContent />
     </AuthProvider>
   );
 }
