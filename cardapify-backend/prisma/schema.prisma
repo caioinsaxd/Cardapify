@@ -22,6 +22,7 @@ model Restaurant {
   categories   Category[]
   orders       Order[]
   users        User[]
+  templates    MenuTemplate[]
 
   @@map("restaurant")
 }
@@ -108,4 +109,45 @@ model User {
 enum UserRole {
   ADMIN
   STAFF
+}
+
+model MenuTemplate {
+  id           String   @id @default(uuid()) @map("menu_template")
+  restaurantId String?  @map("restaurant_id")
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String   @db.VarChar(100)
+  description  String?  @db.VarChar(500)
+  isActive     Boolean  @default(false) @map("is_active")
+  isSystem     Boolean  @default(false) @map("is_system")
+  config       Json     @db.Json
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  schedules    TemplateSchedule[]
+
+  @@map("menu_template")
+}
+
+model TemplateSchedule {
+  id         String        @id @default(uuid()) @map("template_schedule")
+  templateId String
+  template   MenuTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  type       ScheduleType @default(DAY_OF_WEEK) @map("schedule_type")
+  days       String[]      @default([]) @map("days")
+  startTime  String?       @db.VarChar(5) @map("start_time")
+  endTime    String?       @db.VarChar(5) @map("end_time")
+  date       DateTime?     @map("date")
+  pattern    String?       @map("pattern")
+  priority   Int           @default(0) @map("priority")
+  isActive   Boolean      @default(true) @map("is_active")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  @@map("template_schedule")
+}
+
+enum ScheduleType {
+  DAY_OF_WEEK
+  TIME_RANGE
+  DATE
+  RECURRING
 }
