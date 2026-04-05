@@ -12,6 +12,7 @@ import { OrderModule } from './order/order.module';
 import { HealthModule } from './health/health.module';
 import { PublicModule } from './public/public.module';
 import { PaymentModule } from './payment/payment.module';
+import { TemplatesModule } from './templates/templates.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { PaymentModule } from './payment/payment.module';
     HealthModule,
     PublicModule,
     PaymentModule,
+    TemplatesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
