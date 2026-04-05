@@ -127,3 +127,112 @@ export interface DashboardStats {
   todayRevenue: number;
   ordersByStatus: Record<string, number>;
 }
+
+export interface TemplateColorConfig {
+  primaryColor: string;
+  secondaryColor: string;
+  backgroundColor: string;
+  surfaceColor: string;
+  textColor: string;
+  textSecondaryColor: string;
+  borderColor: string;
+  successColor: string;
+  errorColor: string;
+  warningColor: string;
+  accentColor: string;
+}
+
+export interface TemplateTypography {
+  fontFamily: string;
+  headingFontFamily: string;
+  titleSize: number;
+  descriptionSize: number;
+  priceSize: number;
+  sectionTitleSize: number;
+  lineHeight: number;
+}
+
+export interface TemplateLayout {
+  cardStyle: 'rounded' | 'square' | 'shadow' | 'bordered';
+  borderRadius: number;
+  cardSize: 'small' | 'medium' | 'large';
+  cardSpacing: number;
+  imageAspectRatio: '1:1' | '4:3' | '16:9' | 'auto';
+  maxImageHeight: number;
+}
+
+export interface TemplateProductDisplay {
+  showImage: boolean;
+  showName: boolean;
+  showDescription: boolean;
+  showPrice: boolean;
+  pricePosition: 'below' | 'overlay';
+  showAddButton: boolean;
+  addButtonStyle: 'icon' | 'text' | 'full';
+  addButtonText: string;
+  showBadges: boolean;
+  badgePosition: 'top-left' | 'top-right' | 'overlay';
+  maxDescriptionLines: number;
+}
+
+export interface TemplateHeader {
+  showLogo: boolean;
+  showRestaurantName: boolean;
+  showAddress: boolean;
+  showPhone: boolean;
+  showDescription: boolean;
+  showBusinessHours: boolean;
+  headerStyle: 'minimal' | 'full';
+}
+
+export interface TemplateFooter {
+  showFooter: boolean;
+  customText: string | null;
+  showPoweredBy: boolean;
+}
+
+export interface TemplateMenuStructure {
+  displayMode: 'tabs' | 'scroll' | 'list';
+  sections: string[];
+}
+
+export interface TemplateConfig {
+  colors: TemplateColorConfig;
+  typography: TemplateTypography;
+  layout: TemplateLayout;
+  menuStructure: TemplateMenuStructure;
+  productDisplay: TemplateProductDisplay;
+  header: TemplateHeader;
+  footer: TemplateFooter;
+}
+
+export interface TemplateSchedule {
+  id: string;
+  templateId: string;
+  type: 'DAY_OF_WEEK' | 'TIME_RANGE' | 'DATE' | 'RECURRING';
+  days: string[];
+  startTime: string | null;
+  endTime: string | null;
+  date: string | null;
+  pattern: string | null;
+  priority: number;
+  isActive: boolean;
+}
+
+export interface MenuTemplate {
+  id: string;
+  restaurantId: string | null;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  isSystem: boolean;
+  config: TemplateConfig;
+  schedules: TemplateSchedule[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TemplatesResponse {
+  userTemplates: MenuTemplate[];
+  systemTemplates: MenuTemplate[];
+}
