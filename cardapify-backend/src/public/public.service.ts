@@ -50,6 +50,35 @@ const DAY_MAP: Record<number, string> = {
   6: 'saturday',
 };
 
+interface Section {
+  id: string;
+  type: string;
+  order: number;
+  styling?: {
+    backgroundColor?: string;
+    paddingTop?: number;
+    paddingBottom?: number;
+  };
+  config?: {
+    categoryId?: string;
+    productIds?: string[];
+    columns?: number;
+    cardConfig?: {
+      image?: { show: boolean };
+      name?: { show: boolean };
+      description?: { show: boolean };
+      price?: { show: boolean };
+      addButton?: { show: boolean };
+    };
+    title?: string;
+    content?: string;
+    alignment?: string;
+    imageUrl?: string;
+    overlayOpacity?: number;
+    height?: number;
+  };
+}
+
 @Injectable()
 export class PublicService {
   private readonly logger = new Logger(PublicService.name);
@@ -63,6 +92,104 @@ export class PublicService {
 
     if (!restaurant) {
       throw new NotFoundException('Restaurant not found');
+    }
+
+    const settings = (restaurant.settings as JsonObject) || {};
+    const orderSettings = (settings.orderSettings as OrderSettings) || DEFAULT_ORDER_SETTINGS;
+    const businessHours = (settings.businessHours as BusinessHours[]) || DEFAULT_BUSINESS_HOURS;
+
+    const activePage = await this.prisma.menuPage.findFirst({
+      where: {
+        restaurantId,
+        isActive: true,
+      },
+    });
+
+    if (activePage && activePage.sections && (activePage.sections as Section[]).length > 0) {
+      const sections = (activePage.sections as Section[]) || [];
+      const categoryIds = new Set<string>();
+      const productIds = new Set<string>();
+
+      sections.forEach(section => {
+        if (section.type === 'PRODUCT_GRID' && section.config) {
+          if (section.config.categoryId) categoryIds.add(section.config.categoryId);
+          if (section.config.productIds) {
+            section.config.productIds.forEach(id => productIds.add(id));
+          }
+        }
+      });
+
+      const [categoriesData, productsData] = await Promise.all([
+        categoryIds.size > 0
+          ? this.prisma.category.findMany({
+              where: { id: { in: Array.from(categoryIds) } },
+              orderBy: { order: 'asc' },
+            })
+          : [],
+        productIds.size > 0 || categoryIds.size > 0
+          ? this.prisma.product.findMany({
+              where: {
+                isActive: true,
+                ...(productIds.size > 0 ? { id: { in: Array.from(productIds) } } : {}),
+                ...(categoryIds.size > 0 ? { categoryId: { in: Array.from(categoryIds) } } : {}),
+              },
+              include: { category: true },
+              orderBy: { name: 'asc' },
+            })
+          : [],
+      ]);
+
+      const enrichedSections = sections.map(section => {
+        if (section.type !== 'PRODUCT_GRID' || !section.config) {
+          return section;
+        }
+
+        let sectionProducts = [...productsData];
+
+        if (section.config.categoryId) {
+          sectionProducts = productsData.filter(p => p.categoryId === section.config.categoryId);
+        }
+
+        if (section.config.productIds && section.config.productIds.length > 0) {
+          const productIdSet = new Set(section.config.productIds);
+          sectionProducts = productsData.filter(p => productIdSet.has(p.id));
+        }
+
+        const category = categoriesData.find(c => c.id === section.config.categoryId);
+
+        return {
+          ...section,
+          products: sectionProducts.map(p => ({
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            price: p.price.toString(),
+            imageUrl: p.imageUrl,
+          })),
+          category: category ? { id: category.id, name: category.name } : null,
+        };
+      });
+
+      return {
+        restaurant: {
+          id: restaurant.id,
+          name: restaurant.name,
+          address: restaurant.address,
+          phone: (restaurant as any).phone || null,
+          description: (restaurant as any).description || null,
+        },
+        orderSettings,
+        businessHours,
+        page: {
+          id: activePage.id,
+          name: activePage.name,
+          useTabs: activePage.useTabs,
+          tabs: activePage.tabs || [],
+          styling: activePage.styling,
+        },
+        sections: enrichedSections,
+        isPageBuilder: true,
+      };
     }
 
     const categories = await this.prisma.category.findMany({
@@ -85,10 +212,6 @@ export class PublicService {
       },
     });
 
-    const settings = (restaurant.settings as JsonObject) || {};
-    const orderSettings = (settings.orderSettings as OrderSettings) || DEFAULT_ORDER_SETTINGS;
-    const businessHours = (settings.businessHours as BusinessHours[]) || DEFAULT_BUSINESS_HOURS;
-
     return {
       restaurant: {
         id: restaurant.id,
@@ -104,6 +227,7 @@ export class PublicService {
         name: cat.name,
         products: cat.products,
       })),
+      isPageBuilder: false,
     };
   }
 
