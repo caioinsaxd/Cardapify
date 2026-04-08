@@ -236,3 +236,237 @@ export interface TemplatesResponse {
   userTemplates: MenuTemplate[];
   systemTemplates: MenuTemplate[];
 }
+
+//Types pro page builder
+export enum SectionType {
+  PRODUCT_GRID = 'PRODUCT_GRID',
+  TEXT_BLOCK = 'TEXT_BLOCK',
+  BANNER = 'BANNER',
+  SPACER = 'SPACER',
+}
+
+export enum BackgroundType {
+  SOLID = 'solid',
+  GRADIENT = 'gradient',
+  IMAGE = 'image',
+}
+
+export enum ImageAspectRatio {
+  SQUARE = '1:1',
+  FOUR_THREE = '4:3',
+  SIXTEEN_NINE = '16:9',
+}
+
+export enum TextAlignment {
+  LEFT = 'left',
+  CENTER = 'center',
+  RIGHT = 'right',
+}
+
+export enum BadgeType {
+  POPULAR = 'popular',
+  NEW = 'new',
+  PROMO = 'promo',
+  CUSTOM = 'custom',
+}
+
+export enum BadgePosition {
+  TOP_LEFT = 'top-left',
+  TOP_RIGHT = 'top-right',
+}
+
+export enum PricePosition {
+  BELOW = 'below',
+  OVERLAY = 'overlay',
+}
+
+export enum AddButtonStyle {
+  ICON = 'icon',
+  TEXT = 'text',
+  FULL = 'full',
+}
+
+export enum HeaderStyle {
+  MINIMAL = 'minimal',
+  FULL = 'full',
+  NONE = 'none',
+}
+
+export enum FontSize {
+  SM = 'sm',
+  BASE = 'base',
+  LG = 'lg',
+  XL = 'xl',
+}
+
+export enum FontWeight {
+  NORMAL = 'normal',
+  MEDIUM = 'medium',
+  BOLD = 'bold',
+}
+
+export interface ImageConfig {
+  show: boolean;
+  aspectRatio: '1:1' | '4:3' | '16:9';
+  borderRadius: number;
+}
+
+export interface TextStyleConfig {
+  show: boolean;
+  fontSize?: 'sm' | 'base' | 'lg' | 'xl';
+  fontWeight?: 'normal' | 'medium' | 'bold';
+}
+
+export interface DescriptionConfig {
+  show: boolean;
+  maxLines?: number;
+}
+
+export interface PriceConfig {
+  show: boolean;
+  position?: 'below' | 'overlay';
+  style?: 'normal' | 'highlighted';
+}
+
+export interface BadgeConfig {
+  show: boolean;
+  position?: 'top-left' | 'top-right';
+  type?: 'popular' | 'new' | 'promo' | 'custom';
+  customText?: string;
+}
+
+export interface AddButtonConfig {
+  show: boolean;
+  style?: 'icon' | 'text' | 'full';
+  text: string;
+}
+
+export interface ProductCardConfig {
+  image: ImageConfig;
+  name: TextStyleConfig;
+  description: DescriptionConfig;
+  price: PriceConfig;
+  badge: BadgeConfig;
+  addButton: AddButtonConfig;
+}
+
+export interface ProductGridConfig {
+  categoryId?: string;
+  productIds?: string[];
+  columns: number;
+  cardConfig: ProductCardConfig;
+}
+
+export interface TextBlockConfig {
+  title?: string;
+  content: string;
+  alignment?: 'left' | 'center' | 'right';
+}
+
+export interface BannerConfig {
+  imageUrl?: string;
+  overlayColor?: string;
+  overlayOpacity: number;
+  title?: string;
+  subtitle?: string;
+  ctaText?: string;
+  ctaLink?: string;
+}
+
+export interface SpacerConfig {
+  height: number;
+}
+
+export interface SectionStyling {
+  backgroundColor?: string;
+  paddingTop?: number;
+  paddingBottom?: number;
+}
+
+export interface Section {
+  id: string;
+  type: SectionType;
+  order: number;
+  styling?: SectionStyling;
+  config?: ProductGridConfig | TextBlockConfig | BannerConfig | SpacerConfig;
+}
+
+export interface Tab {
+  id: string;
+  name: string;
+  icon?: string;
+  sectionIds: string[];
+  isDefault: boolean;
+}
+
+export interface BackgroundConfig {
+  type: 'solid' | 'gradient' | 'image';
+  solidColor?: string;
+  gradientStart?: string;
+  gradientEnd?: string;
+  imageUrl?: string;
+  imageOverlay?: string;
+  imageOverlayOpacity?: number;
+}
+
+export interface ColorsConfig {
+  primary: string;
+  text: string;
+  textSecondary: string;
+  surface: string;
+  border: string;
+}
+
+export interface TypographyConfig {
+  fontFamily: string;
+  headingFontFamily?: string;
+  baseSize: number;
+  lineHeight: number;
+}
+
+export interface LayoutConfig {
+  maxWidth: number;
+  padding: number;
+  cardBorderRadius: number;
+}
+
+export interface HeaderConfig {
+  show: boolean;
+  style?: 'minimal' | 'full' | 'none';
+  showLogo?: boolean;
+  showRestaurantName?: boolean;
+  showBusinessHours?: boolean;
+}
+
+export interface FooterConfig {
+  show: boolean;
+  text?: string;
+  showPoweredBy?: boolean;
+}
+
+export interface PageStyling {
+  background: BackgroundConfig;
+  colors: ColorsConfig;
+  typography: TypographyConfig;
+  layout: LayoutConfig;
+  header?: HeaderConfig;
+  footer?: FooterConfig;
+}
+
+export interface MenuPage {
+  id: string;
+  restaurantId: string;
+  name: string;
+  isActive: boolean;
+  useTabs: boolean;
+  tabs?: Tab[];
+  sections?: Section[];
+  styling?: PageStyling;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MenuPageWithProducts extends MenuPage {
+  sections: (Section & { products?: Product[]; category?: Category })[];
+  categories: Category[];
+}
