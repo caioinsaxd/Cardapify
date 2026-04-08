@@ -50,7 +50,7 @@ const DAY_MAP: Record<number, string> = {
   6: 'saturday',
 };
 
-interface Section {
+export interface Section {
   id: string;
   type: string;
   order: number;
@@ -105,8 +105,8 @@ export class PublicService {
       },
     });
 
-    if (activePage && activePage.sections && (activePage.sections as Section[]).length > 0) {
-      const sections = (activePage.sections as Section[]) || [];
+     if (activePage && activePage.sections && (activePage.sections as unknown as Section[]).length > 0) {
+      const sections = (activePage.sections as unknown as Section[]) || [];
       const categoryIds = new Set<string>();
       const productIds = new Set<string>();
 
@@ -119,43 +119,45 @@ export class PublicService {
         }
       });
 
-      const [categoriesData, productsData] = await Promise.all([
-        categoryIds.size > 0
-          ? this.prisma.category.findMany({
-              where: { id: { in: Array.from(categoryIds) } },
-              orderBy: { order: 'asc' },
-            })
-          : [],
-        productIds.size > 0 || categoryIds.size > 0
-          ? this.prisma.product.findMany({
-              where: {
-                isActive: true,
-                ...(productIds.size > 0 ? { id: { in: Array.from(productIds) } } : {}),
-                ...(categoryIds.size > 0 ? { categoryId: { in: Array.from(categoryIds) } } : {}),
-              },
-              include: { category: true },
-              orderBy: { name: 'asc' },
-            })
-          : [],
-      ]);
+      const categoriesResult = categoryIds.size > 0
+        ? await this.prisma.category.findMany({
+            where: { id: { in: Array.from(categoryIds) } },
+          })
+        : [];
+      
+      const productsResult = productIds.size > 0 || categoryIds.size > 0
+        ? await this.prisma.product.findMany({
+            where: {
+              isActive: true,
+              ...(productIds.size > 0 ? { id: { in: Array.from(productIds) } } : {}),
+              ...(categoryIds.size > 0 ? { categoryId: { in: Array.from(categoryIds) } } : {}),
+            },
+            include: { category: true },
+            orderBy: { name: 'asc' },
+          })
+        : [];
+
+      const categoriesData = categoriesResult;
+      const productsData = productsResult;
 
       const enrichedSections = sections.map(section => {
         if (section.type !== 'PRODUCT_GRID' || !section.config) {
           return section;
         }
 
+        const config = section.config;
         let sectionProducts = [...productsData];
 
-        if (section.config.categoryId) {
-          sectionProducts = productsData.filter(p => p.categoryId === section.config.categoryId);
+        if (config.categoryId) {
+          sectionProducts = productsData.filter(p => p.categoryId === config.categoryId);
         }
 
-        if (section.config.productIds && section.config.productIds.length > 0) {
-          const productIdSet = new Set(section.config.productIds);
+        if (config.productIds && config.productIds.length > 0) {
+          const productIdSet = new Set(config.productIds);
           sectionProducts = productsData.filter(p => productIdSet.has(p.id));
         }
 
-        const category = categoriesData.find(c => c.id === section.config.categoryId);
+        const category = config.categoryId ? categoriesData.find(c => c.id === config.categoryId) : undefined;
 
         return {
           ...section,
