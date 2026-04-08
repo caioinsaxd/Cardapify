@@ -23,6 +23,7 @@ model Restaurant {
   orders       Order[]
   users        User[]
   templates    MenuTemplate[]
+  pages        MenuPage[]
 
   @@map("restaurant")
 }
@@ -143,6 +144,22 @@ model TemplateSchedule {
   updatedAt  DateTime     @updatedAt @map("updated_at")
 
   @@map("template_schedule")
+}
+
+model MenuPage {
+  id           String   @id @default(uuid()) @map("menu_page")
+  restaurantId String   @map("restaurant_id")
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String   @db.VarChar(100)
+  isActive     Boolean  @default(false) @map("is_active")
+  useTabs      Boolean  @default(false) @map("use_tabs")
+  tabs         Json?    @db.Json
+  sections     Json?    @db.Json
+  styling      Json?    @db.Json
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("menu_page")
 }
 
 enum ScheduleType {
