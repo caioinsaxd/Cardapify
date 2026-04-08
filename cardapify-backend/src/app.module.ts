@@ -13,6 +13,7 @@ import { HealthModule } from './health/health.module';
 import { PublicModule } from './public/public.module';
 import { PaymentModule } from './payment/payment.module';
 import { TemplatesModule } from './templates/templates.module';
+import { PagesModule } from './pages/pages.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { TemplatesModule } from './templates/templates.module';
     PublicModule,
     PaymentModule,
     TemplatesModule,
+    PagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
